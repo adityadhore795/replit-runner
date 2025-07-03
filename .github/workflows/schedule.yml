@@ -1,8 +1,9 @@
 name: Run Replit Script
 
 on:
+  workflow_dispatch:
+
   schedule:
-    # every 6 hours at minute 0 UTC (which hits approximately 00:30, 06:30, 12:30, 18:30 IST)
     - cron: '0 0,6,12,18 * * *'
 
 jobs:
@@ -10,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-
       - run: npm install playwright
       - run: node run-replit.js
         env:
