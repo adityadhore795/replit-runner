@@ -4,39 +4,35 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  // 1. Load the real login page (with form)
-  await page.goto('https://replit.com/login?goto=/auth/login', {
-    waitUntil: 'networkidle'
-  });
+  // 1. Open the login form directly
+  await page.goto(
+    'https://replit.com/login?goto=/auth/login',
+    { waitUntil: 'domcontentloaded' }
+  );
 
-  // 2. Wait up to 60s for the email/password fields to appear
-  await page.waitForSelector('input', { timeout: 60000 });
+  // 2. Fill email/username by its placeholder text
+  await page.getByPlaceholder('EMAIL OR USERNAME', { timeout: 60000 })
+            .fill(process.env.REPL_EMAIL);
 
-  // 3. Grab the first two inputs: email, then password
-  const inputs = page.locator('input');
-  await inputs.nth(0).fill(process.env.REPL_EMAIL);
-  await inputs.nth(1).fill(process.env.REPL_PASSWORD);
+  // 3. Fill password
+  await page.getByPlaceholder('PASSWORD', { timeout: 30000 })
+            .fill(process.env.REPL_PASSWORD);
 
-  // 4. Submit the form and wait for your dashboard
+  // 4. Click the “Log In” button
   await Promise.all([
     page.waitForNavigation({ waitUntil: 'networkidle' }),
-    page.click('button[type="submit"]'),
+    page.getByRole('button', { name: 'Log In' }).click()
   ]);
 
-  // 5. Go to your Repl
-  await page.goto(process.env.REPL_URL, {
-    waitUntil: 'networkidle'
-  });
+  // 5. Navigate to your Repl
+  await page.goto(process.env.REPL_URL, { waitUntil: 'networkidle' });
 
   // 6. Click Run
   await page.getByRole('button', { name: 'Run' }).click();
 
-  // 7. Wait for it to flip back to “Run” (max 2 min)
-  await page.waitForRole('button', {
-    name: 'Run',
-    timeout: 120_000
-  });
+  // 7. Wait for it to revert back to “Run” (max 2 min)
+  await page.getByRole('button', { name: 'Run', timeout: 120_000 });
 
-  // 8. Close browser
+  // 8. Close the browser
   await browser.close();
 })();
