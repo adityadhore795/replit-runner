@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: '18'
       - run: npm install playwright
+      - run: npx playwright install
       - run: node run-replit.js
         env:
           REPL_EMAIL: ${{ secrets.REPL_EMAIL }}
